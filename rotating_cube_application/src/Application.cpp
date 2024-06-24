@@ -50,15 +50,33 @@ void Application::Init(ApplicationSpec& appSpec)
 		throw std::runtime_error::exception("Debug layer hasn't been initialized!");
 #endif // _DEBUG
 
+	InitWindow(appSpec);
+
 }
 
 void Application::Run()
 {
-	std::cout << "The application is running..." << std::endl;
+	auto now = std::chrono::system_clock::now();
+	auto previous = now;
+
+	while (!m_Window->IsClosed())
+	{
+		now = std::chrono::system_clock::now();
+		auto deltaTime = std::chrono::
+			duration_cast<std::chrono::duration<double>>(
+				now - previous
+			);
+
+		previous = now;
+
+		m_Window->Update(deltaTime.count());
+		m_Window->Poll();
+	}
 }
 
 void Application::Terminate()
 {
+	delete m_Window;
 #ifdef _DEBUG
 	DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugLayer, nullptr);
 #endif // _DEBUG
@@ -66,13 +84,23 @@ void Application::Terminate()
 	glfwTerminate();
 }
 
-ApplicationSpec InitApplicationSpec(const std::string& appName, int major, int minor, int patch)
+void Application::InitWindow(ApplicationSpec& appSpec)
+{
+	m_Window = new Window(m_Instance, appSpec.WindowWidth, appSpec.WindowHeight, appSpec.AppName);
+}
+
+ApplicationSpec InitApplicationSpec(const std::string& appName, 
+	int major, int minor, int patch,
+	int width, int height)
 {
 	ApplicationSpec spec{};
 	spec.AppName = appName;
 	spec.Major = major;
 	spec.Minor = minor;
 	spec.Patch = patch;
+
+	spec.WindowWidth = width;
+	spec.WindowHeight = height;
 
 	uint32_t count;
 	const char** extensions = glfwGetRequiredInstanceExtensions(&count);
@@ -81,5 +109,5 @@ ApplicationSpec InitApplicationSpec(const std::string& appName, int major, int m
 	for (int i = 0; i < count; i++)
 		spec.Extensions.push_back(extensions[i]);
 
-	return ApplicationSpec();
+	return spec;
 }

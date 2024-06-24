@@ -5,10 +5,12 @@
 int main(int argc, char** argv)
 {
 	Application& app = Application::GetInstance();
-	ApplicationSpec spec = InitApplicationSpec("RotatingCube", 0, 0, 1);
+	ApplicationSpec spec = InitApplicationSpec("RotatingCube", 0, 0, 1, 800, 600);
 
 #ifdef _DEBUG
 	spec.Extensions.push_back("VK_EXT_debug_utils");
+	spec.Extensions.push_back("VK_KHR_surface");
+	spec.Extensions.push_back("VK_KHR_win32_surface");
 	spec.Layers.push_back("VK_LAYER_KHRONOS_validation");
 #endif // _DEBUG
 
