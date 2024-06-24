@@ -1,0 +1,8 @@
+out/
+build/
+.vs/
+*.html
+*.sln
+*.vcxproj
+*.css
+*.js
