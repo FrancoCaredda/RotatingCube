@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 
 project("RotatingCubeApplication")
-add_executable(${PROJECT_NAME} "src/main.cpp")
+add_executable(${PROJECT_NAME} "src/main.cpp" "include/Application.h" "src/Application.cpp" "include/DebugLayer.h" "src/DebugLayer.cpp")
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include"
                                                   "${CMAKE_SOURCE_DIR}/vulkan/include"
