@@ -6,26 +6,26 @@
 
 #include <string>
 
+#define GENERATE_WINDOW_BODY(class_name) class_name(int width, int height, const std::string& title) : Window(width, height, title) {} \
+										 class_name(class_name&& window) noexcept : Window(std::move(window)) { } \
+										 class_name(const class_name&) = delete;\
+										 virtual ~class_name() {}
+
 class Window
 {
 public:
-	Window(VkInstance instance, int width, int height, const std::string& title);
-	Window(Window&& window) noexcept = delete;
+	Window(int width, int height, const std::string& title);
+	Window(Window&& window) noexcept;
 	Window(const Window&) = delete;
-	~Window();
+	virtual ~Window();
 
-	void Update(float deltaTime);
+	virtual void Update(float deltaTime) = 0;
 	void Poll();
 
 	inline GLFWwindow* GetNative() const noexcept { return m_Handle; }
-	inline VkSurfaceKHR GetSurface() const noexcept { return m_Surface; }
-
 	inline bool IsClosed() const noexcept { return glfwWindowShouldClose(m_Handle); }
 private:
 	GLFWwindow* m_Handle = nullptr;
-	VkSurfaceKHR m_Surface = nullptr;
-
-	VkInstance m_Instance = nullptr;
 
 	int m_Width = 0,
 		m_Height = 0;

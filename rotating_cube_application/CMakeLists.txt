@@ -1,7 +1,26 @@
 cmake_minimum_required(VERSION 3.8)
 
 project("RotatingCubeApplication")
-add_executable(${PROJECT_NAME} "src/main.cpp" "include/Application.h" "src/Application.cpp" "include/DebugLayer.h" "src/DebugLayer.cpp" "include/Window.h" "src/Window.cpp")
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD 17)
+add_executable(${PROJECT_NAME} "src/main.cpp" 
+                               "include/Application.h" 
+                               "src/Application.cpp" 
+                               "include/DebugLayer.h" 
+                               "src/DebugLayer.cpp" 
+                               "include/Window.h" 
+                               "src/Window.cpp" 
+                               "include/PhysicalDevice.h" 
+                               "src/PhysicalDevice.cpp" 
+                               "include/Renderer.h" 
+                               "src/Renderer.cpp" 
+                               "include/Specification.h" 
+                               "src/Specification.cpp" 
+                               "include/QueueFamilyIndices.h" 
+                               "include/WindowManager.h"
+                               "src/WindowManager.cpp" 
+                               "include/MainWindow.h"
+                               "src/MainWindow.cpp")
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC VK_USE_PLATFORM_WIN32_KHR
                                            PUBLIC GLFW_INCLUDE_VULKAN)

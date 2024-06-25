@@ -1,12 +1,10 @@
 #include "Application.h"
-
-#ifdef _DEBUG
-#include "DebugLayer.h"
-#endif // _DEBUG
+#include "Renderer.h"
+#include "WindowManager.h"
+#include "MainWindow.h"
 
 #include <GLFW/glfw3.h>
 
-#include <stdexcept>
 #include <chrono>
 #include <iostream>
 
@@ -19,39 +17,24 @@ Application& Application::GetInstance()
 
 void Application::Init(ApplicationSpec& appSpec)
 {
-	m_ApplicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	m_ApplicationInfo.pApplicationName = appSpec.AppName.c_str();
-	m_ApplicationInfo.apiVersion = VK_API_VERSION_1_3;
-	m_ApplicationInfo.applicationVersion = VK_MAKE_VERSION(appSpec.Major, appSpec.Minor, appSpec.Patch);
+	WindowManager& windowManager = WindowManager::GetInstance();
+	windowManager.Init();
 
-	VkInstanceCreateInfo instanceInfo{};
-	instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	instanceInfo.pApplicationInfo = &m_ApplicationInfo;
-	instanceInfo.ppEnabledExtensionNames = appSpec.Extensions.data();
-	instanceInfo.ppEnabledLayerNames = appSpec.Layers.data();
-	instanceInfo.enabledExtensionCount = appSpec.Extensions.size();
-	instanceInfo.enabledLayerCount = appSpec.Layers.size();
-#ifdef _DEBUG
-	VkDebugUtilsMessengerCreateInfoEXT debugInfo = InitDebugLayerSpec();
-	instanceInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugInfo;
-#endif // _DEBUG
+	m_Window = windowManager.CreateWindowInstance<MainWindow>(800, 600, appSpec.AppName);
 
-	if (vkCreateInstance(&instanceInfo, nullptr, &m_Instance) != VK_SUCCESS)
-		throw std::runtime_error::exception("Vulkan hasn't been initialized!");
+	RendererSpec rendererSpec{};
+	InitRendererSpec(rendererSpec, 800, 600);
 
-	if (!glfwInit())
-		throw std::runtime_error::exception("GLFW hasn't been initialized!");
+	rendererSpec.Extensions.push_back("VK_KHR_surface");
+	rendererSpec.Extensions.push_back("VK_KHR_win32_surface");
 
 #ifdef _DEBUG
-	if (!LoadInitFunctions(m_Instance))
-		throw std::runtime_error::exception("Debug lifecycle functions haven't been loaded!");
-
-	if (CreateDebugUtilsMessengerEXT(m_Instance, &debugInfo, nullptr, &m_DebugLayer) != VK_SUCCESS)
-		throw std::runtime_error::exception("Debug layer hasn't been initialized!");
+	rendererSpec.Extensions.push_back("VK_EXT_debug_utils");
+	rendererSpec.Layers.push_back("VK_LAYER_KHRONOS_validation");
 #endif // _DEBUG
 
-	InitWindow(appSpec);
-
+	Renderer& renderer = Renderer::GetRenderer();
+	renderer.Init(appSpec, rendererSpec, m_Window);
 }
 
 void Application::Run()
@@ -76,38 +59,9 @@ void Application::Run()
 
 void Application::Terminate()
 {
-	delete m_Window;
-#ifdef _DEBUG
-	DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugLayer, nullptr);
-#endif // _DEBUG
-	vkDestroyInstance(m_Instance, nullptr);
-	glfwTerminate();
-}
+	Renderer& renderer = Renderer::GetRenderer();
+	renderer.Terminate();
 
-void Application::InitWindow(ApplicationSpec& appSpec)
-{
-	m_Window = new Window(m_Instance, appSpec.WindowWidth, appSpec.WindowHeight, appSpec.AppName);
-}
-
-ApplicationSpec InitApplicationSpec(const std::string& appName, 
-	int major, int minor, int patch,
-	int width, int height)
-{
-	ApplicationSpec spec{};
-	spec.AppName = appName;
-	spec.Major = major;
-	spec.Minor = minor;
-	spec.Patch = patch;
-
-	spec.WindowWidth = width;
-	spec.WindowHeight = height;
-
-	uint32_t count;
-	const char** extensions = glfwGetRequiredInstanceExtensions(&count);
-
-	spec.Extensions.reserve(count);
-	for (int i = 0; i < count; i++)
-		spec.Extensions.push_back(extensions[i]);
-
-	return spec;
+	WindowManager& windowManager = WindowManager::GetInstance();
+	windowManager.Terminate();
 }
