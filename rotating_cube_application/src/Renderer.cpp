@@ -17,10 +17,12 @@ void Renderer::Init(ApplicationSpec& spec,
 	InitInstance(spec, rendererSpec);
 	InitSurface(window);
 	InitPhysicalDevice();
+	InitDevice();
 }
 
 void Renderer::Terminate()
 {
+	vkDestroyDevice(m_Device, nullptr);
 	vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
 #ifdef _DEBUG
 	DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugLayer, nullptr);
@@ -83,6 +85,40 @@ void Renderer::InitPhysicalDevice()
 
 void Renderer::InitDevice()
 {
+	const uint32_t indices[] = {
+		m_Indices.graphicsQueue.value(),
+		m_Indices.presentationQueue.value() 
+	};
+	uint32_t count = sizeof(indices) / sizeof(uint32_t);
+
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	queueCreateInfos.reserve(count);
+
+	float priority = 1.0f;
+	for (int i = 0; i < count; i++)
+	{
+		VkDeviceQueueCreateInfo queueInfo{};
+		queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueInfo.queueFamilyIndex = indices[i];
+		queueInfo.queueCount = 1;
+		queueInfo.pQueuePriorities = &priority;
+
+		queueCreateInfos.push_back(queueInfo);
+	}
+
+	if (indices[0] == indices[1])
+		queueCreateInfos.pop_back();
+
+	VkDeviceCreateInfo deviceInfo{};
+	deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	deviceInfo.pQueueCreateInfos = queueCreateInfos.data();
+	deviceInfo.queueCreateInfoCount = queueCreateInfos.size();
+
+	if (vkCreateDevice(m_PhysicalDevice, &deviceInfo, nullptr, &m_Device) != VK_SUCCESS)
+		throw std::runtime_error::exception("Device hasn't been created!");
+
+	vkGetDeviceQueue(m_Device, indices[0], 0, &m_GraphicsQueue);
+	vkGetDeviceQueue(m_Device, indices[1], 0, &m_PresentationQueue);
 }
 
 Renderer& Renderer::GetRenderer() noexcept
