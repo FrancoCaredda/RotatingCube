@@ -2,6 +2,7 @@
 #define _RENDERER_H
 
 #include "QueueFamilyIndices.h"
+#include "PhysicalDevice.h"
 
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -22,25 +23,28 @@ private:
 					  RendererSpec& rendererSpec);
 	void InitSurface(class Window* window);
 	void InitPhysicalDevice();
-	void InitDevice();
+	void InitDevice(struct DeviceSpec& deviceSpec);
+	void InitSwapchain(class Window* window);
 private:
 	Renderer() = default;
 	static Renderer s_Renderer;
 
 private: // Vulkan Instances
-	VkInstance m_Instance;
+	VkInstance m_Instance = nullptr;
 
 #ifdef _DEBUG
-	VkDebugUtilsMessengerEXT m_DebugLayer;
+	VkDebugUtilsMessengerEXT m_DebugLayer = nullptr;
 #endif // !_DEBUG
 
-	VkSurfaceKHR m_Surface;
-	VkPhysicalDevice m_PhysicalDevice;
-	VkDevice m_Device;
-	VkQueue m_GraphicsQueue;
-	VkQueue m_PresentationQueue;
+	VkSurfaceKHR m_Surface = nullptr;
+	VkPhysicalDevice m_PhysicalDevice = nullptr;
+	VkDevice m_Device = nullptr;
+	VkQueue m_GraphicsQueue = nullptr;
+	VkQueue m_PresentationQueue = nullptr;
+	VkSwapchainKHR m_Swapchain = nullptr;
 
 	QueueFamilyIndices m_Indices{};
+	SurfaceProperties m_Properties{};
 };
 
 #endif // !_RENDERER_H

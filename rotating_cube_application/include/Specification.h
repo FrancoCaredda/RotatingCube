@@ -17,11 +17,16 @@ struct RendererSpec
 {
 	int WindowWidth, WindowHeight;
 
-	std::vector<const char*> Layers;
 	std::vector<const char*> Extensions;
+	std::vector<const char*> Layers;
 };
 
 void InitRendererSpec(RendererSpec& outRendererSpec, int width, int height);
 
+struct DeviceSpec
+{
+	std::vector<const char*> Extensions;
+	std::vector<const char*> Layers;
+};
 
 #endif // !_SPECIFICATION_H
